@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Heroes VS Calamity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600;800&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="game" aria-label="Arena do jogo"></canvas>
+<div id="vignette" aria-hidden="true"></div>
+
+<div id="hud" hidden>
+  <div class="hud-top">
+    <div class="hud-stats">
+      <div class="bar bar-hp"><div class="bar-fill" id="hp-fill"></div><span class="bar-label" id="hp-text"></span></div>
+      <div class="bar bar-xp"><div class="bar-fill" id="xp-fill"></div><span class="bar-label" id="lvl-text"></span></div>
+      <div class="gold"><span class="coin"></span><span id="gold-text">0</span></div>
+    </div>
+    <div class="hud-wave">
+      <div class="wave-label" id="wave-text"></div>
+      <div class="wave-timer" id="timer-text"></div>
+    </div>
+    <button class="icon-btn" id="btn-pause" type="button" aria-label="Pausar">❚❚</button>
+  </div>
+  <div class="boss-bar" id="boss-bar" hidden>
+    <div class="boss-name" id="boss-name"></div>
+    <div class="bar bar-boss"><div class="bar-fill" id="boss-fill"></div></div>
+  </div>
+  <div class="hud-bottom">
+    <div class="weapon-slots" id="weapon-slots"></div>
+    <button class="ability-btn" id="btn-ability" type="button" aria-label="Usar habilidade">
+      <span class="ability-icon" id="ability-icon"></span>
+      <span class="ability-cd" id="ability-cd"></span>
+      <kbd class="ability-key">Espaço</kbd>
+    </button>
+  </div>
+</div>
+
+<div id="banner" class="banner" aria-live="polite">
+  <div class="banner-title" id="banner-title"></div>
+  <div class="banner-sub" id="banner-sub"></div>
+</div>
+
+<section id="screen-menu" class="screen screen-menu" hidden>
+  <div class="panel menu-panel" tabindex="-1">
+    <header class="menu-head">
+      <p class="eyebrow">Sobreviva a 20 ondas e derrote A Calamidade</p>
+      <h1 class="logo">Heroes <span class="logo-vs">vs</span> Calamity</h1>
+    </header>
+    <div class="hero-grid" id="hero-grid"></div>
+    <div class="hero-detail" id="hero-detail"></div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-start" type="button">Jogar</button>
+    </div>
+    <p class="controls-hint">
+      <span><kbd>WASD</kbd> ou setas para mover</span>
+      <span><kbd>Espaço</kbd> habilidade</span>
+      <span><kbd>Esc</kbd> pausa</span>
+      <span>No celular: arraste o dedo para mover</span>
+    </p>
+  </div>
+</section>
+
+<section id="screen-levelup" class="screen" hidden>
+  <div class="panel" tabindex="-1">
+    <h2 class="screen-title">Subiu de nível!</h2>
+    <p class="screen-sub" id="levelup-sub"></p>
+    <div class="cards" id="levelup-cards"></div>
+  </div>
+</section>
+
+<section id="screen-shop" class="screen" hidden>
+  <div class="panel shop-panel" tabindex="-1">
+    <div class="shop-head">
+      <div>
+        <p class="eyebrow">Loja do Mercador</p>
+        <h2 class="screen-title" id="shop-title"></h2>
+        <p class="screen-sub" id="shop-sub"></p>
+      </div>
+      <div class="gold gold-big"><span class="coin"></span><span id="shop-gold">0</span></div>
+    </div>
+    <div class="shop-body">
+      <div class="shop-main">
+        <div class="cards shop-cards" id="shop-cards"></div>
+        <div class="actions">
+          <button class="btn" id="btn-reroll" type="button">Trocar ofertas</button>
+          <button class="btn btn-primary" id="btn-next" type="button">Próxima onda</button>
+        </div>
+      </div>
+      <aside class="shop-side">
+        <h3>Armas</h3>
+        <div class="inv-weapons" id="shop-weapons"></div>
+        <h3>Itens</h3>
+        <div class="inv-items" id="shop-items"></div>
+        <h3>Atributos</h3>
+        <dl class="stat-list" id="shop-stats"></dl>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section id="screen-pause" class="screen" hidden>
+  <div class="panel pause-panel" tabindex="-1">
+    <h2 class="screen-title">Pausado</h2>
+    <div class="pause-body">
+      <div>
+        <h3>Armas</h3>
+        <div class="inv-weapons" id="pause-weapons"></div>
+      </div>
+      <div>
+        <h3>Atributos</h3>
+        <dl class="stat-list" id="pause-stats"></dl>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-resume" type="button">Continuar</button>
+      <button class="btn" id="btn-mute" type="button">Som: ligado</button>
+      <button class="btn btn-danger" id="btn-quit" type="button">Desistir da partida</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-end" class="screen" hidden>
+  <div class="panel end-panel" tabindex="-1">
+    <h2 class="screen-title end-title" id="end-title"></h2>
+    <p class="screen-sub" id="end-sub"></p>
+    <dl class="stat-list end-stats" id="end-stats"></dl>
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-retry" type="button">Jogar de novo</button>
+      <button class="btn" id="btn-menu" type="button">Escolher herói</button>
+    </div>
+  </div>
+</section>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="js/utils.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/data/weapons.js"></script>
+<script src="js/data/heroes.js"></script>
+<script src="js/data/enemies.js"></script>
+<script src="js/data/items.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
